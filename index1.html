@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation - VamosFood</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1614, #2a2420);
+            color: #f5f1ed;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #2a2420;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #d4a574, #c7522a);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 36px; color: #0f0d0c; margin-bottom: 10px; }
+        .header p { font-size: 16px; color: #1a1614; }
+
+        .form-section { padding: 40px; }
+
+        .form-group { margin-bottom: 25px; }
+
+        label {
+            display: block;
+            color: #d4a574;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            background: #1a1614;
+            border: 2px solid #d4a574;
+            border-radius: 8px;
+            color: #f5f1ed;
+            font-size: 16px;}
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #c7522a;
+            background: #0f0d0c;}
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .number-selector { display: flex; align-items: center; gap: 15px; }
+        .number-selector button {
+            width: 45px;
+            height: 45px;
+            background: #d4a574;
+            border: none;
+            border-radius: 8px;
+            color: #0f0d0c;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;}
+        
+        .number-selector button:hover { background: #c7522a; }
+        .number-selector input { width: 80px; text-align: center; font-size: 20px; font-weight: bold; }
+        .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+
+        .time-slot {
+            padding: 15px;
+            background: #1a1614;
+            border: 2px solid #d4a574;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #f5f1ed;
+        }
+        .time-slot:hover { background: #d4a574; color: #0f0d0c; }
+        .time-slot.selected { background: #c7522a; color: #f5f1ed; border-color: #c7522a; }
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #d4a574, #c7522a);
+            border: none;
+            border-radius: 8px;
+            color: #0f0d0c;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+        .submit-btn:hover { box-shadow: 0 10px 30px rgba(212,165,116,0.4); }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+
+        .modal-content {
+            background: #2a2420;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            border: 3px solid #d4a574;
+        }
+
+        .modal-header { text-align: center; margin-bottom: 30px; }
+        .modal-header h2 { color: #d4a574; font-size: 32px; margin-bottom: 10px; }
+        .modal-header p { color: #b8a89a; font-size: 16px; }
+
+        .reservation-details { background: #1a1614; padding: 25px; border-radius: 10px; margin-bottom: 25px; }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #d4a574;
+        }
+
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #d4a574; font-weight: bold; }
+        .detail-value { color: #f5f1ed; text-align: right; }
+
+        .modal-buttons { display: flex; gap: 15px; }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-confirm { background: linear-gradient(135deg, #d4a574, #c7522a); color: #0f0d0c; }
+        .btn-cancel { background: #1a1614; color: #f5f1ed; border: 2px solid #d4a574; }
+
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .time-slots { grid-template-columns: repeat(2, 1fr); }
+            .header h1 { font-size: 28px; }
+            .form-section { padding: 20px; }
+            .modal-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Réservation de Table</h1>
+            <p>Réservez votre table en quelques clics</p>
+        </div>
+
+        <div class="form-section">
+            <form id="reservationForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom complet :</label>
+                        <input type="text" id="name" placeholder="Votre nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone :</label>
+                        <input type="tel" id="phone" placeholder="+212 XXX XXX XXX" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email :</label>
+                    <input type="email" id="email" placeholder="votre@email.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de réservation :</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre de personnes :</label>
+                        <div class="number-selector">
+                            <button type="button" onclick="changeNumber(-1)">-</button>
+                            <input type="number" id="guests" value="0" readonly>
+                            <button type="button" onclick="changeNumber(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Heure de réservation :</label>
+                    <input type="hidden" id="time" required>
+                    <div class="time-slots">
+                        <div class="time-slot" onclick="selectTime('12:00')">12:00</div>
+                        <div class="time-slot" onclick="selectTime('12:30')">12:30</div>
+                        <div class="time-slot" onclick="selectTime('13:00')">13:00</div>
+                        <div class="time-slot" onclick="selectTime('13:30')">13:30</div>
+                        <div class="time-slot" onclick="selectTime('19:00')">19:00</div>
+                        <div class="time-slot" onclick="selectTime('19:30')">19:30</div>
+                        <div class="time-slot" onclick="selectTime('20:00')">20:00</div>
+                        <div class="time-slot" onclick="selectTime('20:30')">20:30</div>
+                        <div class="time-slot" onclick="selectTime('21:00')">21:00</div>
+                        <div class="time-slot" onclick="selectTime('21:30')">21:30</div>
+                        <div class="time-slot" onclick="selectTime('22:00')">22:00</div>
+                        <div class="time-slot" onclick="selectTime('22:30')">22:30</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Demandes spéciales</label>
+                    <textarea id="notes" rows="4" placeholder="Allergies, préférences..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Réserver maintenant</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✓ Confirmation de Réservation</h2>
+                <p>Veuillez vérifier vos informations</p>
+            </div>
+            <div class="reservation-details" id="details"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-confirm" onclick="confirm()">Confirmer</button>
+                <button class="modal-btn btn-cancel" onclick="closec()">Modifier</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('min', today);
+        document.getElementById('date').value = today;
+
+        function changeNumber(n) {
+            const input = document.getElementById('guests');
+            let value = parseInt(input.value) + n;
+            if (value >= 1 && value <= 20) input.value = value;
+        }
+
+        function selectTime(time) {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            event.target.classList.add('selected');
+            document.getElementById('time').value = time;
+        }
+
+        document.getElementById('reservationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!document.getElementById('time').value) {
+                alert('Veuillez sélectionner un créneau horaire');
+                return;
+            }
+
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const date = document.getElementById('date').value;
+            const guests = document.getElementById('guests').value;
+            const time = document.getElementById('time').value;
+            const notes = document.getElementById('notes').value;
+
+            document.getElementById('details').innerHTML = `
+                <div class="detail-row"><span class="detail-label">Nom</span><span class="detail-value">${name}</span></div>
+                <div class="detail-row"><span class="detail-label">Téléphone</span><span class="detail-value">${phone}</span></div>
+                <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${email}</span></div>
+                <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${date}</span></div>
+                <div class="detail-row"><span class="detail-label">Heure</span><span class="detail-value">${time}</span></div>
+                <div class="detail-row"><span class="detail-label">Personnes</span><span class="detail-value">${guests}</span></div>
+                ${notes ? `<div class="detail-row"><span class="detail-label">Notes</span><span class="detail-value">${notes}</span></div>` : ''}
+            `;
+            document.getElementById('modal').classList.add('show');
+        });
+
+        function closec() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        function confirm() {
+            alert('Réservation confirmée avec succès !');
+            document.getElementById('modal').classList.remove('show');
+            document.getElementById('reservationForm').reset();
+            document.getElementById('date').value = today;
+            document.getElementById('guests').value = 2;
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        }
+    </script>
+</body>
+</html>
